@@ -26,6 +26,7 @@ doc_filename = None
 im_filename = None
 unsaved_Contacts = None
 
+
 def read_message(fileName):
     msgIklan = open(fileName, 'r').read()
 

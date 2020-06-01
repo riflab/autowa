@@ -7,23 +7,32 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
 try:
     import autoit
-except:
+except ModuleNotFoundError:
     pass
 import time
 import datetime
 import os
+import argparse
 
+parser = argparse.ArgumentParser(description='PyWhatsapp Guide')
+parser.add_argument('--chrome_driver_path', action='store', type=str, default='./chromedriver.exe', help='chromedriver executable path (MAC and Windows path would be different)')
+parser.add_argument('--message', action='store', type=str, default='', help='Enter the msg you want to send')
+parser.add_argument('--remove_cache', action='store', type=str, default='False', help='Remove Cache | Scan QR again or Not')
+args = parser.parse_args()
+
+if args.remove_cache == 'True':
+    os.system('rm -rf User_Data/*')
 browser = None
 Contact = None
-message = None
+message = None if args.message == '' else args.message
 Link = "https://web.whatsapp.com/"
 wait = None
 choice = None
 docChoice = None
 doc_filename = None
-im_filename = None
 unsaved_Contacts = None
 
 
@@ -79,7 +88,8 @@ def input_contacts():
                 print("3. Message to Saved Contact on database")
                 print("4. Message to Unsaved Contact on database")
                 print('-------------------------------------------')
-                x = int(input("Enter your choice(1, 2, 3, or 4):\n"))
+                # x = int(input("Enter your choice(1, 2, 3, or 4):\n"))
+                x = 4
                 break
             except:
                 print("That's not a valid option!")
@@ -113,7 +123,8 @@ def input_contacts():
                         print('\nNo such file or directory')
             elif x == 4:
                 while True:
-                    db_contact = str(input("Enter database file name : "))
+                    # db_contact = str(input("Enter database file name : "))
+                    db_contact = 'database.xlsx'
                     if os.path.isfile(db_contact) == True:
                         unsaved_Contacts = readContacts4(db_contact)
                         break
@@ -144,7 +155,8 @@ def input_message():
                 print("1. Type the message manually")
                 print("2. Read the message from a file")
                 print('-------------------------------------------')
-                x = int(input("Enter your choice(1 or 2):\n"))
+                # x = int(input("Enter your choice(1 or 2):\n"))
+                x = 2
                 break
             except:
                 print("That's not a valid option!")
@@ -171,7 +183,8 @@ def input_message():
             elif x == 2:
                 # print()                
                 while True:
-                    y = str(input("Enter message file name: \n"))
+                    # y = str(input("Enter message file name: \n"))
+                    y = 'iklan_madu.txt'
                     if os.path.isfile(y) == True:
                         message = read_message(y)
                         break
@@ -188,20 +201,29 @@ def input_message():
             print("That's not a valid option!")
             clearTerminal()
 
-def whatsapp_login():
-    global wait,browser,Link
-    browser = webdriver.Chrome()
+def whatsapp_login(chrome_path):
+    global wait, browser, Link
+    chrome_options = Options()
+    chrome_options.add_argument('--user-data-dir=./User_Data')
+    browser = webdriver.Chrome(executable_path=chrome_path, options=chrome_options)
     wait = WebDriverWait(browser, 600)
     browser.get(Link)
-    # browser.maximize_window()
+    browser.maximize_window()
     print("QR scanned")
 
 def send_message(target):
-    global message,wait, browser
+    global message, wait, browser
     try:
         x_arg = '//span[contains(@title,' + target + ')]'
-        group_title = wait.until(EC.presence_of_element_located((By.XPATH, x_arg)))
-        group_title.click()
+        ct = 0
+        while ct != 10:
+            try:
+                group_title = wait.until(EC.presence_of_element_located((By.XPATH, x_arg)))
+                group_title.click()
+                break
+            except:
+                ct += 1
+                time.sleep(10)
         input_box = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[2]/div/div[2]')
         for ch in message:
             if ch == "\n":
@@ -210,14 +232,14 @@ def send_message(target):
                 input_box.send_keys(ch)
         input_box.send_keys(Keys.ENTER)
         print("Message sent successfuly")
-        time.sleep(3)
+        time.sleep(10)
     except NoSuchElementException:
         return
 
 def send_unsaved_contact_message():
     global message
     try:
-        time.sleep(15)
+        time.sleep(10)
         input_box = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[2]/div/div[2]')
         for ch in message:
             if ch == "\n":
@@ -239,23 +261,22 @@ def send_attachment():
         # Attachment Drop Down Menu
         clipButton = browser.find_element_by_xpath('//*[@id="main"]/header/div[3]/div/div[2]/div/span')
         clipButton.click()
-        time.sleep(6)
+        time.sleep(7)
 
         # To send Videos and Images.
         mediaButton = browser.find_element_by_xpath('//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[1]/button')
         mediaButton.click()
-        time.sleep(6)
+        time.sleep(7)
 
         image_path = os.getcwd() + "\\Media\\" + medialist[i]
 
-        autoit.control_focus("Open","Edit1")
-        autoit.control_set_text("Open","Edit1",(image_path) )
-        autoit.control_click("Open","Button1")
+        autoit.control_focus("Open", "Edit1")
+        autoit.control_set_text("Open", "Edit1", image_path)
+        autoit.control_click("Open", "Button1")
 
-        time.sleep(6)
+        time.sleep(10)
         whatsapp_send_button = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
         whatsapp_send_button.click()
-
 def send_files():
     #Function to send Documents(PDF, Word file, PPT, etc.)
     global doc_filename
@@ -266,60 +287,56 @@ def send_files():
     # Attachment Drop Down Menu
         clipButton = browser.find_element_by_xpath('//*[@id="main"]/header/div[3]/div/div[2]/div/span')
         clipButton.click()
-        time.sleep(6)
+        time.sleep(7)
 
         # To send a Document(PDF, Word file, PPT)
         docButton = browser.find_element_by_xpath('//*[@id="main"]/header/div[3]/div/div[2]/span/div/div/ul/li[3]/button')
         docButton.click()
-        time.sleep(6)
+        time.sleep(7)
 
         docPath = os.getcwd() + "\\Documents\\" + filelist[i]
 
-        autoit.control_focus("Open","Edit1")
-        autoit.control_set_text("Open","Edit1",(docPath) )
-        autoit.control_click("Open","Button1")
-
-        time.sleep(6)
+        autoit.control_focus("Open", "Edit1")
+        autoit.control_set_text("Open", "Edit1", (docPath))
+        autoit.control_click("Open", "Button1")
+        time.sleep(7)
         whatsapp_send_button = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
         whatsapp_send_button.click()
 
 def sender():
-    global Contact,choice, docChoice, unsaved_Contacts
+    global Contact, choice, docChoice, unsaved_Contacts
     for i in Contact:
         send_message(i)
-        print("Message sent to ",i)
-        if(choice=="y") or (choice=="Y"):
+        print("Message sent to ", i)
+        if(choice == "yes"):
             try:
                 send_attachment()
             except:
                 print('Attachment not sent.')
-        if(choice=="y") or (choice=="Y"):
+        if(docChoice == "yes"):
             try:
                 send_files()
             except:
                 print('Files not sent')
-    time.sleep(8)
-    if len(unsaved_Contacts)>0:
+    time.sleep(10)
+    if len(unsaved_Contacts) > 0:
         for i in unsaved_Contacts:
-            link = "https://wa.me/"+i
+            link = "https://web.whatsapp.com/send?phone={}&text&source&data&app_absent".format(i)
             #driver  = webdriver.Chrome()
             browser.get(link)
-            time.sleep(3)
-            browser.find_element_by_xpath('//*[@id="action-button"]').click()
-            time.sleep(7)
             print("Sending message to", i)
             send_unsaved_contact_message()
-            if(choice=="y") or (choice=="Y"):
+            if(choice == "yes"):
                 try:
                     send_attachment()
                 except:
                     print('Attachment not sent.')
-            if(choice=="y") or (choice=="Y"):
+            if(docChoice == "yes"):
                 try:
                     send_files()
                 except:
                     print('Files not sent')
-            time.sleep(13)
+            time.sleep(10)
 
 # For GoodMorning Image and Message
 # schedule.every().day.at("07:00").do( sender )
@@ -335,7 +352,7 @@ def sender():
 def scheduler():
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(10)
 
 if __name__ == "__main__":
     clearTerminal()
@@ -381,7 +398,7 @@ if __name__ == "__main__":
 
     # Let us login and Scan
     print("SCAN YOUR QR CODE FOR WHATSAPP WEB")
-    whatsapp_login()
+    whatsapp_login(args.chrome_driver_path)
 
     # Send message to all Contact List
     # This sender is just for testing purpose to check script working or not.
