@@ -18,4 +18,8 @@ arif.darmawan@riflab.com
 RifLab - [www.riflab.com](https://riflab.com)
 
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 
