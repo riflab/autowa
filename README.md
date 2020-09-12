@@ -19,6 +19,10 @@ RifLab - [www.riflab.com](https://riflab.com)
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
