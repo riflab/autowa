@@ -173,6 +173,7 @@ def input_message(campaign):
     print(message)
     print('-------------------------------------------')
     print()
+    message = message.split('\n')
         #     break
         # else:
         #     print("That's not a valid option!")
@@ -228,7 +229,7 @@ def send_unsaved_contact_message():
         #         input_box.send_keys(ch)
         # # input_box.send_keys(message)
 
-        message = message.split('\n')
+        # message = message.split('\n')
         # print(message)
 
         for ch in message:
