@@ -1,3 +1,4 @@
 PyAutoIt
 schedule
 selenium
+openpyxl
