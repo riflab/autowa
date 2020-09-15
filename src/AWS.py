@@ -222,7 +222,7 @@ def send_unsaved_contact_message():
         # time.sleep(15)
         
         address_XPATH = '//*[@id="main"]/footer/div[1]/div[2]/div/div[2]'
-        webloading(browser, link_num, address_XPATH)
+        # webloading(browser, link_num, address_XPATH)
         input_box = browser.find_element_by_xpath(address_XPATH)
         
         # for ch in message:
@@ -282,6 +282,7 @@ def send_attachment():
 
     # time.sleep(5)
     autoitloading(autoit)
+    time.sleep(1)
     autoit.control_focus("Open", "Edit1")
     autoit.control_set_text("Open", "Edit1", image_path)
     autoit.control_click("Open", "Button1")
@@ -335,10 +336,11 @@ def send_files():
     docButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/span/div/div/ul/li[3]/button')
     docButton.click()
 
-    time.sleep(5)
+    # time.sleep(5)
     #     docPath = os.getcwd() + "\\Documents\\" + 'FAQ Madu.pdf'
     #     docPath = docPath.replace('\\src', '')
-
+    autoitloading(autoit)
+    time.sleep(1)
     autoit.control_focus("Open", "Edit1")
     autoit.control_set_text("Open", "Edit1", image_path)
     autoit.control_click("Open", "Button1")
@@ -375,19 +377,25 @@ def sender():
             link_num = "https://web.whatsapp.com/send?phone={}&text&source&data&app_absent".format(i)
             #driver  = webdriver.Chrome()
             browser.get(link_num)
-            print("Sending message to", i)
-            send_unsaved_contact_message()
-            if(choice == "yes"):
-                try:
-                    send_attachment()
-                except:
-                    print('Attachment not sent.')
-            if(docChoice == "yes"):
-                try:
-                    send_files()
-                except:
-                    print('Files not sent')
-            time.sleep(10)
+
+            address_XPATH = '//*[@id="main"]/footer/div[1]/div[2]/div/div[2]'
+            valadation = webloading(browser, link_num, address_XPATH)
+            # input_box = browser.find_element_by_xpath(address_XPATH)
+
+            if valadation == True:
+                print("Sending message to", i)
+                send_unsaved_contact_message()
+                if(choice == "yes"):
+                    try:
+                        send_attachment()
+                    except:
+                        print('Attachment not sent.')
+                if(docChoice == "yes"):
+                    try:
+                        send_files()
+                    except:
+                        print('Files not sent')
+            time.sleep(3)
     else:
         print('No numbers available')
 
