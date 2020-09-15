@@ -2,12 +2,11 @@ import schedule
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
+
 try:
     import autoit
 except ModuleNotFoundError:
@@ -17,7 +16,7 @@ import time
 import datetime
 import os
 import argparse
-from AWSmodule import read_message, read_database, read_medialist, read_setting
+from AWSmodule import read_message, read_database, read_medialist, read_setting, webloading, autoitloading
 
 parser = argparse.ArgumentParser(description='PyWhatsapp Guide')
 parser.add_argument('--chrome_driver_path', action='store', type=str, default='./chromedriver.exe', help='chromedriver executable path (MAC and Windows path would be different)')
@@ -31,6 +30,7 @@ browser = None
 # Contact = None
 message = None if args.message == '' else args.message
 Link = "https://web.whatsapp.com/"
+link_num = None
 wait = None
 choice = None
 docChoice = None
@@ -219,8 +219,11 @@ def whatsapp_login(chrome_path):
 def send_unsaved_contact_message():
     global message
     try:
-        time.sleep(15)
-        input_box = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[2]/div/div[2]')
+        # time.sleep(15)
+        
+        address_XPATH = '//*[@id="main"]/footer/div[1]/div[2]/div/div[2]'
+        webloading(browser, link_num, address_XPATH)
+        input_box = browser.find_element_by_xpath(address_XPATH)
         
         # for ch in message:
         #     if ch == "\n":
@@ -265,23 +268,28 @@ def send_attachment():
     clipButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/div')
     clipButton.click()
 
-    time.sleep(5)
     # To send Videos and Images.
-    # mediaButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[3]/div/div[2]/span/div/div/ul/li[1]/button')
-    mediaButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/span/div/div/ul/li[1]/button')
+    time.sleep(5)
+    address_XPATH = '//*[@id="main"]/footer/div[1]/div[1]/div[2]/span/div/div/ul/li[1]/button'
+    # webloading(browser, link_num, address_XPATH)
+     # mediaButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[3]/div/div[2]/span/div/div/ul/li[1]/button')
+    mediaButton = browser.find_element_by_xpath(address_XPATH)
     mediaButton.click()
 
     # image_path = os.getcwd() + "\\Media\\" + 'madu(1).jpeg'
     # image_path = image_path.replace('\\src', '')
     # print(image_path)
 
-    time.sleep(5)
+    # time.sleep(5)
+    autoitloading(autoit)
     autoit.control_focus("Open", "Edit1")
     autoit.control_set_text("Open", "Edit1", image_path)
     autoit.control_click("Open", "Button1")
     
     time.sleep(5)
-    ket = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[1]/span/div/div[2]/div/div[3]/div[1]')   
+    address_XPATH = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[1]/span/div/div[2]/div/div[3]/div[1]'
+    # webloading(browser, link_num, address_XPATH)
+    ket = browser.find_element_by_xpath(address_XPATH)   
     ket.send_keys(medialist_Desc[0])
 
     # time.sleep(5)
@@ -347,6 +355,7 @@ def send_files():
 def sender():
     # global Contact, choice, docChoice, unsaved_Contacts
     # global choice, docChoice, unsaved_Contacts
+    global link_num
     # for i in Contact:
     #     send_message(i)
     #     print("Message sent to ", i)
@@ -363,9 +372,9 @@ def sender():
     # time.sleep(10)
     if len(unsaved_Contacts) > 0:
         for i in unsaved_Contacts:
-            link = "https://web.whatsapp.com/send?phone={}&text&source&data&app_absent".format(i)
+            link_num = "https://web.whatsapp.com/send?phone={}&text&source&data&app_absent".format(i)
             #driver  = webdriver.Chrome()
-            browser.get(link)
+            browser.get(link_num)
             print("Sending message to", i)
             send_unsaved_contact_message()
             if(choice == "yes"):

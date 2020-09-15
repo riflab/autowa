@@ -1,5 +1,9 @@
 import openpyxl as excel
 import os
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 
 '''
 main                
@@ -64,6 +68,30 @@ def read_setting(fileName, s_name='setting', col_name=2):
     d = sheet.cell(row=i+4,column=col_name).value
 
     return a, b, c, d
+
+def webloading(browser, link, address_XPATH):    
+    browser.get(link)
+    timeout = 3 # seconds
+    i = 1
+    while True:
+        try:
+            element_present = EC.presence_of_element_located((By.XPATH, address_XPATH))
+            WebDriverWait(browser, timeout).until(element_present)
+            break
+        except TimeoutException:
+            print (i, "Waiting for web page loading...")
+            i+=1
+
+def autoitloading(autoit):    
+    timeout = 3 # seconds
+    i = 1
+    while True:
+        try:
+            autoit.win_wait_active("Open", timeout)
+            break
+        except TimeoutException:
+            print (i, "Waiting for window apprear...")
+            i+=1
 
 if __name__ == '__main__':
     wb_name = 'database.xlsx'
