@@ -88,16 +88,10 @@ def webloading(browser, link, address_XPATH):
                 break
             except NoSuchElementException:
                 pass
-            # if not aa:
-                # print("No element found") 
-            #     print(aa)
-            # else:
-            #     # element = elements[0]
-            #     print("element found")
-            #     print(aa)
-            print (i, "Waiting for web page loading...")
+            print (i, "Menunggu halaman web terbuka")
             i+=1
     return validation
+
 def autoitloading(autoit):    
     timeout = 3 # seconds
     i = 1
@@ -106,7 +100,7 @@ def autoitloading(autoit):
             autoit.win_wait_active("Open", timeout)
             break
         except TimeoutException:
-            print (i, "Waiting for window apprear...")
+            print (i, "Menunggu ")
             i+=1
 
 

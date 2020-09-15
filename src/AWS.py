@@ -34,14 +34,12 @@ link_num = None
 wait = None
 choice = None
 docChoice = None
-# doc_filename = None
-# im_filename = None
 unsaved_Contacts = None
 wb_name = None
 
-def clearTerminal():
-    clear = lambda: os.system('cls')
-    clear()
+# def clearTerminal():
+#     clear = lambda: os.system('cls')
+#     clear()
 
 def input_contacts(db_col):
     # global Contact, unsaved_Contacts
@@ -111,11 +109,11 @@ def input_contacts(db_col):
     # if len(Contact) != 0:
     #     print("\nSaved contacts entered list->",Contact)
     if len(unsaved_Contacts) != 0:
-        print("Unsaved numbers entered list->")
+        print("Daftar nomor yang akan dikirim ->")
         for i in unsaved_Contacts:
             print(i)
     else:
-        print('No numbers available')
+        print('Tidak ada nomor tersedia')
     # input("\nPress ENTER to continue...")
 
 def input_message(campaign):
@@ -188,8 +186,8 @@ def whatsapp_login(chrome_path):
     browser = webdriver.Chrome(executable_path=chrome_path, options=chrome_options)
     wait = WebDriverWait(browser, 600)
     browser.get(Link)
-    browser.maximize_window()
-    print("QR scanned")
+    # browser.maximize_window()
+    print("Kode QR telah berhasil di pindah")
 
 # def send_message(target):
 #     global message, wait, browser
@@ -247,18 +245,23 @@ def send_unsaved_contact_message():
         # time.sleep(5)
         input_box.send_keys(Keys.ENTER)
 
-        print("Message sent successfuly")
+        print("Pesan berhasil dikirimkan")
     except NoSuchElementException:
-        print("Failed to send message")
+        print("Pesan gagal dikirimkan")
         return
 
-def send_attachment():
+def send_attachment(docType):
     # global im_filename
     # medialist = open('madu_media.txt', 'r').read().split('\n')
-    medialist = read_database(wb_name, campaign, 'D')
-    medialist_Desc = read_database(wb_name, campaign, 'E')
+    # docType = 1
+    if docType == 1:
+        medialist = read_database(wb_name, campaign, 'D')
+        medialist_Desc = read_database(wb_name, campaign, 'E')
+    else:
+        medialist = read_database(wb_name, campaign, 'G')
+
     # print('aaa', medialist)
-    docType = 1
+    
     image_path = read_medialist(medialist, docType)
     print(medialist[1:])    
 
@@ -270,12 +273,16 @@ def send_attachment():
 
     # To send Videos and Images.
     time.sleep(5)
-    address_XPATH = '//*[@id="main"]/footer/div[1]/div[1]/div[2]/span/div/div/ul/li[1]/button'
+    if docType == 1:
+        address_XPATH = '//*[@id="main"]/footer/div[1]/div[1]/div[2]/span/div/div/ul/li[1]/button'
+        mediaButton = browser.find_element_by_xpath(address_XPATH)
+        mediaButton.click()
+    # mediaButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[3]/div/div[2]/span/div/div/ul/li[1]/button')
     # webloading(browser, link_num, address_XPATH)
-     # mediaButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[3]/div/div[2]/span/div/div/ul/li[1]/button')
-    mediaButton = browser.find_element_by_xpath(address_XPATH)
-    mediaButton.click()
-
+    else:
+        address_XPATH = '//*[@id="main"]/footer/div[1]/div[1]/div[2]/span/div/div/ul/li[3]/button'
+        docButton = browser.find_element_by_xpath(address_XPATH)
+        docButton.click()
     # image_path = os.getcwd() + "\\Media\\" + 'madu(1).jpeg'
     # image_path = image_path.replace('\\src', '')
     # print(image_path)
@@ -287,72 +294,73 @@ def send_attachment():
     autoit.control_set_text("Open", "Edit1", image_path)
     autoit.control_click("Open", "Button1")
     
-    time.sleep(5)
-    address_XPATH = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[1]/span/div/div[2]/div/div[3]/div[1]'
-    # webloading(browser, link_num, address_XPATH)
-    ket = browser.find_element_by_xpath(address_XPATH)   
-    ket.send_keys(medialist_Desc[0])
+    if docType == 1:
+        time.sleep(5)
+        address_XPATH = '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[1]/span/div/div[2]/div/div[3]/div[1]'
+        # webloading(browser, link_num, address_XPATH)
+        ket = browser.find_element_by_xpath(address_XPATH)   
+        ket.send_keys(medialist_Desc[0])
 
-    # time.sleep(5)
-    a = image_path.split(' ')
+        # time.sleep(5)
+        a = image_path.split(' ')
 
-    for i in range(len(a)-2):
-        imPress = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[2]/span/div[' + str(i+2)+ ']')
-        imPress.click()
-        # print(i+2)
-        ket = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[1]/span/div/div[2]/div/div[3]/div[1]')   
-        ket.send_keys(medialist_Desc[i+1])
-        # print(medialist_Desc[i+1])
-
-    time.sleep(5)
-    # whatsapp_send_button = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
-    whatsapp_send_button = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span/div')
-    whatsapp_send_button.click()
-
-def send_files():
-    #Function to send Documents(PDF, Word file, PPT, etc.)
-    # global doc_filename
-    # filelist = open(doc_filename, 'r').read().split('\n')
-    # print(filelist)
-
-    # global im_filename
-    # medialist = open('madu_media.txt', 'r').read().split('\n')
-    medialist = read_database(wb_name, campaign, 'G')
-    # medialist_Desc = read_database(wb_name, campaign, 'H')
-    # print('aaa', medialist)
-    docType = 2
-    image_path = read_medialist(medialist, docType)
-    print(medialist[1:])
-
-    # for i in range(len(filelist)):
-    # # Attachment Drop Down Menu
-    #     # clipButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[3]/div/div[2]/div/span')
-    clipButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/div')
-    clipButton.click()
-
-    time.sleep(5)
-    #     # To send a Document(PDF, Word file, PPT)
-    #     # docButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[3]/div/div[2]/span/div/div/ul/li[3]/button')
-    docButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/span/div/div/ul/li[3]/button')
-    docButton.click()
-
-    # time.sleep(5)
-    #     docPath = os.getcwd() + "\\Documents\\" + 'FAQ Madu.pdf'
-    #     docPath = docPath.replace('\\src', '')
-    autoitloading(autoit)
-    time.sleep(1)
-    autoit.control_focus("Open", "Edit1")
-    autoit.control_set_text("Open", "Edit1", image_path)
-    autoit.control_click("Open", "Button1")
-
-    # time.sleep(5)
-    # ket = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[1]/span/div/div[2]/div/div[3]/div[1]')   
-    # ket.send_keys(medialist_Desc[0])
+        for i in range(len(a)-2):
+            imPress = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[2]/span/div[' + str(i+2)+ ']')
+            imPress.click()
+            # print(i+2)
+            ket = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[1]/span/div/div[2]/div/div[3]/div[1]')   
+            ket.send_keys(medialist_Desc[i+1])
+            # print(medialist_Desc[i+1])
 
     time.sleep(5)
     # whatsapp_send_button = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
     whatsapp_send_button = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span/div')
     whatsapp_send_button.click()
+
+# def send_files():
+#     #Function to send Documents(PDF, Word file, PPT, etc.)
+#     # global doc_filename
+#     # filelist = open(doc_filename, 'r').read().split('\n')
+#     # print(filelist)
+
+#     # global im_filename
+#     # medialist = open('madu_media.txt', 'r').read().split('\n')
+#     medialist = read_database(wb_name, campaign, 'G')
+#     # medialist_Desc = read_database(wb_name, campaign, 'H')
+#     # print('aaa', medialist)
+#     # docType = 2
+#     image_path = read_medialist(medialist, docType)
+#     print(medialist[1:])
+
+#     # for i in range(len(filelist)):
+#     # # Attachment Drop Down Menu
+#     #     # clipButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[3]/div/div[2]/div/span')
+#     clipButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/div')
+#     clipButton.click()
+
+#     time.sleep(5)
+#     #     # To send a Document(PDF, Word file, PPT)
+#     #     # docButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[3]/div/div[2]/span/div/div/ul/li[3]/button')
+#     docButton = browser.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/span/div/div/ul/li[3]/button')
+#     docButton.click()
+
+#     # time.sleep(5)
+#     #     docPath = os.getcwd() + "\\Documents\\" + 'FAQ Madu.pdf'
+#     #     docPath = docPath.replace('\\src', '')
+#     autoitloading(autoit)
+#     time.sleep(1)
+#     autoit.control_focus("Open", "Edit1")
+#     autoit.control_set_text("Open", "Edit1", image_path)
+#     autoit.control_click("Open", "Button1")
+
+#     # time.sleep(5)
+#     # ket = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/div[1]/span/div/div[2]/div/div[3]/div[1]')   
+#     # ket.send_keys(medialist_Desc[0])
+
+#     time.sleep(5)
+#     # whatsapp_send_button = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span[2]/div/div/span')
+#     whatsapp_send_button = browser.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span/div')
+#     whatsapp_send_button.click()
 
 def sender():
     # global Contact, choice, docChoice, unsaved_Contacts
@@ -383,21 +391,24 @@ def sender():
             # input_box = browser.find_element_by_xpath(address_XPATH)
 
             if valadation == True:
-                print("Sending message to", i)
+                print("Mengirim pesan ke", i)
                 send_unsaved_contact_message()
                 if(choice == "yes"):
                     try:
-                        send_attachment()
+                        docType = 1
+                        send_attachment(docType)
                     except:
-                        print('Attachment not sent.')
+                        print('Gambar/video tidak terkirim')
                 if(docChoice == "yes"):
                     try:
-                        send_files()
+                        # send_files()
+                        docType = 2
+                        send_attachment(docType)
                     except:
-                        print('Files not sent')
+                        print('Dokumen tidak terkirim')
             time.sleep(3)
     else:
-        print('No numbers available')
+        print('Tidak ada nomor tersedia')
 
 # For GoodMorning Image and Message
 # schedule.every().day.at("07:00").do( sender )
@@ -479,7 +490,7 @@ version 1.0
     #             print('\nNo such file or directory')
 
     # Let us login and Scan
-    print("SCAN YOUR QR CODE FOR WHATSAPP WEB")
+    print("Pindai kode QR")
     whatsapp_login(args.chrome_driver_path)
 
     # Send message to all Contact List
@@ -494,7 +505,7 @@ version 1.0
     sender()
 
     # First time message sending Task Complete
-    print("Task Completed")
+    print("Tugas selesai")
 
     # Messages are scheduled to send
     # Default schedule to send attachment and greet the personal
